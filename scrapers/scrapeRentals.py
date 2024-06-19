@@ -7,7 +7,7 @@ import pandas as pd
 # https://rentals.ca
 def scrapeRentals(url_template, df):    
     with sync_playwright() as p:
-        browser = p.chromium.launch()
+        browser = p.chromium.launch(args=["--disable-blink-features-AutomationControlled"])
         page = browser.new_page()
         
         # Set a custom user-agent header; without this session will be flagged as a bot
@@ -43,13 +43,13 @@ def scrapeRentals(url_template, df):
             last_values = {
                 "address1": None,
                 "slug": None,
+                "city": None,
                 "url": None,
                 "region": None,
                 "company": None,
                 "address2": None,
                 "postal_code": None,
                 "view_on_map_url": None,
-                "city": None,
                 "location": None,
                 "phone": None,
                 "time": None
@@ -71,12 +71,16 @@ def scrapeRentals(url_template, df):
                     match = match.replace('true', 'True')
                     match = match.replace('false', 'False')
                     data = json.loads(match)
+
                     # For all values that are empty, update last encountered values (address & url strings)
                     for key in last_values:
                         if key in data:
                             last_values[key] = data[key]
+
                     # Append data to DataFrame
                     df = df.append({**data, **last_values}, ignore_index=True)
+                    df['city'] = df['slug']
+                    
                 except json.JSONDecodeError:
                     print("Invalid JSON:", match)
 
@@ -93,7 +97,10 @@ def scrapeRentals(url_template, df):
         df['rent'] = pd.to_numeric(df['rent'], errors='coerce')
         # Filter rows where rent is None, blank, null, or 0
         df = df[df['rent'].notnull() & (df['rent'] != 0)]
+        df.drop(columns=['slug'], inplace=True)
         df_sorted = df.sort_values(by="rent")
         print(df_sorted)
+        #df.to_csv('rentals.csv', index=False)
+
         browser.close()
     return df_sorted

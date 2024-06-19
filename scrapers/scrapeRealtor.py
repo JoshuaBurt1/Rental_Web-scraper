@@ -7,7 +7,7 @@ import pandas as pd
 # https://www.realtor.ca
 # A. This website adds to the url during pagination a specific "GeoIds" parameter associated with a location
 #to webscrape, this would require making a list of each village,town,city and matching its associated "GeoIds"
-# OR use playwright to loop (press the right button id then get the page.content)
+#TODO: OR use playwright to loop (press the right button id then get the page.content) - get multiple page data
 
 #Example page 1: 
 # https://www.realtor.ca/on/georgina/rentals
@@ -29,7 +29,7 @@ def scrapeRealtor(url_template,df):
         # Set a custom user-agent header to avoid bot detection
         chrome_version = f"Chrome/{random.randint(70, 90)}.0.{random.randint(1000, 9999)}.{random.randint(100, 999)}"
         safari_version = f"Safari/{random.randint(500, 600)}.{random.randint(0, 99)}"
-        user_agent = f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) {chrome_version} {safari_version}"
+        user_agent = f"Mozilla/{random.randint(5, 125)}.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) {chrome_version} {safari_version}"
         page.set_extra_http_headers({"User-Agent": user_agent})
 
         # Adds cookies; modify as needed for your use case
@@ -79,7 +79,6 @@ def scrapeRealtor(url_template,df):
                 "parkingSpaces": result["Property"].get("ParkingSpaceTotal"),
                 "rent": result["Property"].get("LeaseRentUnformattedValue"),
                 "address1": result["Property"]["Address"].get("AddressText"),
-                "slug": None,
                 "url": "https://www.realtor.ca/"+result["RelativeDetailsURL"],
                 "company": None,
                 "address2": None,
@@ -95,6 +94,6 @@ def scrapeRealtor(url_template,df):
         # Create a DataFrame from the list of dictionaries
         df = pd.DataFrame(data_list)
         print(df)
-        #input("Press Enter to close the browser...")
+        #df.to_csv('realtor.csv', index=False)
         browser.close()
         return df

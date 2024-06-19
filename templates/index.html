@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rental Information</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Rental Information - Canada</h1>
+    <form id="cityForm" method="POST">
+        <label for="city">Enter City:</label>
+        <input type="text" id="city" name="city" value="{{ city }}">
+        <button type="submit">Submit</button>
+    </form>
+    <div id="loading" style="display: none;">Loading...</div>
+    {% if data_csv %}
+    <h2>CSV Data</h2>
+    {{ data_csv.to_html(index=False) }}
+    {% endif %}
+    {% if data_chart %}
+    <h2>Chart Data</h2>
+    <div id="chart"></div>
+    {% endif %}
+    {% if data_json %}
+    <h2>JSON Data</h2>
+    <pre>{{ data_json | tojson(indent=4) }}</pre>
+    {% endif %}
+
+    <script>
+        $(document).ready(function() {
+            $('#cityForm').submit(function(event) {
+                $('#loading').show();
+            });
+        });
+    </script>
+</body>
+</html>

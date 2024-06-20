@@ -4,7 +4,7 @@ import re
 import json
 import pandas as pd
 
-# https://rentals.ca
+# alert: canada only
 def scrapeRentals(url_template, df):    
     with sync_playwright() as p:
         browser = p.chromium.launch(args=["--disable-blink-features-AutomationControlled"])
@@ -57,6 +57,7 @@ def scrapeRentals(url_template, df):
 
             # Initialize DataFrame
             initial_length = len(df)
+            #same method as scrapeZillow.py
             pattern = r'({"id".+?})'
             matches = re.findall(pattern, content)
             print(matches)

@@ -7,19 +7,17 @@ from scrapers.scrapeZillow import scrapeZillow
 from scrapers.scrapeApartments import scrapeApartments
 
 # TODO:
-# A. rental websites: facebook marketplace, https://www.viewit.ca/rentals/scarborough?cid=364, https://trreb.ca/
+# A. add other rental websites: facebook marketplace, https://www.viewit.ca/rentals/scarborough?cid=364, https://trreb.ca/
 # B. Find multi-site duplicates and delete
 # Eventually: some kind of machine learning to look at any content = page.content() and organize it into a pandas dataframe
+# - If developer changes site, automated code fixer (opens vs code, iterative process with gpt, edits until previous functionality resumes)
 
 if __name__ == "__main__":
     # Change rental search location here:
-    searchProvState = "oh"
-    searchLocation = "columbus"
+    searchProvState = "on"
+    searchLocation = "sarnia"
     searchLocation = searchLocation.replace(' ', '-').replace('_', '-') 
     canada_provinces_abbr = ["ab", "bc", "mb", "nb", "nl","nt", "ns", "nu", "on", "pe","qc", "sk", "yt"]
-    us_states_abbr = ["al", "ak", "az", "ar", "ca", "co", "ct","de", "fl", "ga", "hi", "id", "il", "in", "ia","ks", "ky", "la", "me", "md", "ma", 
-                      "mi","mn", "ms", "mo", "mt", "ne", "nv", "nh", "nj", "nm", "ny", "nc", "nd", "oh", "ok","or", "pa", "ri", "sc", "sd", "tn", 
-                      "tx","ut", "vt", "va", "wa", "wv", "wi", "wy"]
 
     # Clear previous combined rental data CSV if it exists
     if os.path.exists('combined_rental_data.csv'):
@@ -33,7 +31,7 @@ if __name__ == "__main__":
     try:
         print("Scraping: zillow.com")
         #https://www.zillow.com/st-catharines-on/rentals/
-        df_zillow = scrapeZillow(f'https://www.zillow.com/{searchLocation}-{searchProvState}/rentals/', df.copy())
+        df_zillow = scrapeZillow(f'https://www.zillow.com/{searchLocation}-{searchProvState}/rentals', df.copy())
     except Exception as e:
         df_zillow = None
         print(f"Error scraping zillow.com: {str(e)}")
@@ -46,7 +44,7 @@ if __name__ == "__main__":
         print(f"Error scraping apartments.com: {str(e)}")
     
     # CAN
-    if searchProvState not in us_states_abbr:
+    if searchProvState in canada_provinces_abbr:
         # Scrape rentals.ca data
         try:
             print("Scraping: rentals.ca")
@@ -54,7 +52,7 @@ if __name__ == "__main__":
         except Exception as e:
             df_rentals = None
             print(f"Error scraping rentals.ca: {str(e)}")
-        # Scrape realtor.ca data
+        # Scrape realtor.ca (MLS.ca) data
         try:
             print("Scraping: realtor.ca")
             df_realtor = scrapeRealtor(f'https://www.realtor.ca/on/{searchLocation}/rentals', df.copy())

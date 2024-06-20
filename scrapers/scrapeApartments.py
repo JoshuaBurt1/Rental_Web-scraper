@@ -4,6 +4,7 @@ import random
 import pandas as pd
 
 # TODO: multiple pages
+# alert: different html/json depending on search location
 def scrapeApartments(url_template, df):
     with sync_playwright() as p:
         # Launch browser in non-headless mode for less likelihood of encountering bot features
@@ -18,9 +19,9 @@ def scrapeApartments(url_template, df):
 
         # Navigate to the target URL
         page.goto(url_template)
-        time.sleep(random.uniform(2, 6))
+        #time.sleep(random.uniform(2, 6))
         print(f"Page loaded: {url_template}")
-        content = page.content()
+        #content = page.content()
         #print(content)
         #with open('rentals_content1.txt', 'a', encoding='utf-8') as file:
         #    file.write(content)

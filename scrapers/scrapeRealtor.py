@@ -4,7 +4,7 @@ import random
 import json
 import pandas as pd
 
-# https://www.realtor.ca
+# alert: canada only
 # A. This website adds to the url during pagination a specific "GeoIds" parameter associated with a location
 #to webscrape, this would require making a list of each village,town,city and matching its associated "GeoIds"
 #TODO: OR use playwright to loop (press the right button id then get the page.content) - get multiple page data

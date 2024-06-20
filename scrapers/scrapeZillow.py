@@ -5,8 +5,8 @@ import json
 import time
 import pandas as pd
 
-# https://www.zillow.com/
-# TODO: multiple pages, us cities only 1 result
+# TODO: multiple pages
+# alert: different html/json depending on search location
 def scrapeZillow(url_template, df):
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False, args=["--disable-blink-features-AutomationControlled"])
@@ -23,16 +23,59 @@ def scrapeZillow(url_template, df):
 
         page.goto(url_template)
         #page.wait_for_load_state('networkidle')
-        #time.sleep(random.uniform(2, 6))
         print(f"Page loaded: {url_template}")
+        time.sleep(random.uniform(2, 6))
         content = page.content()
         #print(content)
+        #with open('rentals_content_zillowUS.txt', 'a', encoding='utf-8') as file:
+        #    file.write(content)
 
         #will occur if many requests
         if "px-captcha-container" in content:
             input("Please solve the captcha challenge in the browser. Once solved, press Enter to continue...")
             content = page.content()
 
+        #BIG CITY - single instance, then all results start with zpid: "cat1":\{"searchResults":\{"listResults":[{"zpid"
+        #same method as scrapeRentals.py
+        pattern_bigCity = r'({"zpid".+?})'
+        matches_bigCity = re.findall(pattern_bigCity, content)
+        #print(matches_us)
+        for match in matches_bigCity:
+            #make valid JSON
+            if match.count('{') > match.count('}'):
+                    match += ']}' 
+            try:
+                data = json.loads(match)
+                print(data)
+                # Extract JSON data into property_data format
+                property_data = {
+                    "id": data["zpid"],
+                    "name": data.get("statusText"),
+                    "beds": data.get("units")[0].get("beds"), 
+                    "bathrooms": None, 
+                    "parkingSpaces": None,
+                    "rent": data.get("units")[0].get("price").replace('$', '').replace(',', '').replace('+', '').replace('C', ''),  
+                    "address1": data.get("addressStreet"), 
+                    "url": f"https://www.zillow.com{data.get('detailUrl')}",
+                    "company": None,
+                    "address2": None,
+                    "postal_code": data.get("addressZipcode"),
+                    "view_on_map_url": None,
+                    "city": data.get("addressCity"),
+                    "location": {"latitude": None, "longitude": None}, 
+                    "phone": None,
+                    "time": None 
+                }
+                df = df.append(property_data, ignore_index=True)
+            except json.JSONDecodeError:
+                print("Invalid US JSON:", match)
+        print(df)
+        #df.to_csv('zillow.csv', index=False)
+        #if not df.empty:
+        #    browser.close()
+        #    return df
+
+        #OTHER CITY - multiple instances of pattern
         #pattern = r'"homeInfo":({[^}]*}),'
         pattern = r'"hdpData":\{"homeInfo":({.*?})\}'
         patternURL = r'"hdpData":\{"homeInfo":{.*?"detailUrl":"(.*?)".*?\}'
@@ -45,6 +88,7 @@ def scrapeZillow(url_template, df):
                 matchesURL[i] = 'https://www.zillow.com/' + matchesURL[i]
 
         for i, match in enumerate(matches):
+            #make valid JSON
             if match.count('{') > match.count('}'):
                     match += '}'     
             try: 
@@ -59,7 +103,7 @@ def scrapeZillow(url_template, df):
                     "parkingSpaces": None,  
                     "rent": data.get("price"),
                     "address1": data.get("streetAddress"),
-                    "url": matchesURL[i-1],  # Use corresponding URL from matchesURL
+                    "url": matchesURL[i-1], 
                     "company": None,
                     "address2": None,
                     "postal_code": data.get("zipcode"),
@@ -71,9 +115,8 @@ def scrapeZillow(url_template, df):
                 }
                 df = df.append(property_data, ignore_index=True)
             except json.JSONDecodeError:
-                print("Invalid JSON:", match)
-
-        browser.close()
+                print("Invalid CAN JSON:", match)
         print(df)
-        #df.to_csv('zillow.csv', index=False)
+        #df.to_csv('zillow2.csv', index=False)
+        browser.close()
         return df

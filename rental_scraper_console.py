@@ -6,18 +6,20 @@ from scrapers.scrapeRealtor import scrapeRealtor
 from scrapers.scrapeZillow import scrapeZillow
 from scrapers.scrapeApartments import scrapeApartments
 
-# facebook marketplace
-# https://www.viewit.ca/rentals/scarborough?cid=364 
-# https://trreb.ca/
-
+# TODO:
+# A. rental websites: facebook marketplace, https://www.viewit.ca/rentals/scarborough?cid=364, https://trreb.ca/
+# B. Find multi-site duplicates and delete
 # Eventually: some kind of machine learning to look at any content = page.content() and organize it into a pandas dataframe
-# TODO: A. this needs to find duplicates and delete B. site specific two word search format
 
 if __name__ == "__main__":
     # Change rental search location here:
-    searchLocation = "ajax"
-    #B.
+    searchProvState = "oh"
+    searchLocation = "columbus"
     searchLocation = searchLocation.replace(' ', '-').replace('_', '-') 
+    canada_provinces_abbr = ["ab", "bc", "mb", "nb", "nl","nt", "ns", "nu", "on", "pe","qc", "sk", "yt"]
+    us_states_abbr = ["al", "ak", "az", "ar", "ca", "co", "ct","de", "fl", "ga", "hi", "id", "il", "in", "ia","ks", "ky", "la", "me", "md", "ma", 
+                      "mi","mn", "ms", "mo", "mt", "ne", "nv", "nh", "nj", "nm", "ny", "nc", "nd", "oh", "ok","or", "pa", "ri", "sc", "sd", "tn", 
+                      "tx","ut", "vt", "va", "wa", "wv", "wi", "wy"]
 
     # Clear previous combined rental data CSV if it exists
     if os.path.exists('combined_rental_data.csv'):
@@ -26,37 +28,42 @@ if __name__ == "__main__":
     # Initialize an empty DataFrame for rentals data
     df = pd.DataFrame(columns=["id", "name", "beds", "bathrooms", "parkingSpaces", "rent", "address1", "url", "company", "address2", "postal_code", "view_on_map_url", "city", "location", "region", "phone", "time"])
 
-    # Scrape rentals.ca data
+    # US-CAN
+    # Scrape zillow.com data
     try:
-        print("Scraping: rentals.ca")
-        df_rentals = scrapeRentals(f'https://rentals.ca/{searchLocation}/all-apartments-all-houses-condos-rooms', df.copy())
+        print("Scraping: zillow.com")
+        #https://www.zillow.com/st-catharines-on/rentals/
+        df_zillow = scrapeZillow(f'https://www.zillow.com/{searchLocation}-{searchProvState}/rentals/', df.copy())
     except Exception as e:
-        df_rentals = None
-        print(f"Error scraping rentals.ca: {str(e)}")
-    
+        df_zillow = None
+        print(f"Error scraping zillow.com: {str(e)}")
     # Scrape apartments.com data
     try:
         print("Scraping: apartments.com")
-        df_apartments = scrapeApartments(f'https://www.apartments.com/{searchLocation}-on/', df.copy())
+        df_apartments = scrapeApartments(f'https://www.apartments.com/{searchLocation}-{searchProvState}/', df.copy())
     except Exception as e:
         df_apartments = None
         print(f"Error scraping apartments.com: {str(e)}")
     
-    # Scrape zillow.com data
-    try:
-        print("Scraping: zillow.com")
-        df_zillow = scrapeZillow(f'https://www.zillow.com/{searchLocation}-on/rentals/', df.copy())
-    except Exception as e:
-        df_zillow = None
-        print(f"Error scraping zillow.com: {str(e)}")
-
-    # Scrape realtor.ca data
-    try:
-        print("Scraping: realtor.ca")
-        df_realtor = scrapeRealtor(f'https://www.realtor.ca/on/{searchLocation}/rentals', df.copy())
-    except Exception as e:
+    # CAN
+    if searchProvState not in us_states_abbr:
+        # Scrape rentals.ca data
+        try:
+            print("Scraping: rentals.ca")
+            df_rentals = scrapeRentals(f'https://rentals.ca/{searchLocation}/all-apartments-all-houses-condos-rooms', df.copy())
+        except Exception as e:
+            df_rentals = None
+            print(f"Error scraping rentals.ca: {str(e)}")
+        # Scrape realtor.ca data
+        try:
+            print("Scraping: realtor.ca")
+            df_realtor = scrapeRealtor(f'https://www.realtor.ca/on/{searchLocation}/rentals', df.copy())
+        except Exception as e:
+            df_realtor = None
+            print(f"Error scraping realtor.ca: {str(e)}")
+    else:
+        df_rentals = None
         df_realtor = None
-        print(f"Error scraping realtor.ca: {str(e)}")
      
     # Merge DataFrames and handle duplicates
     dfs = [df_rentals, df_apartments, df_zillow, df_realtor]

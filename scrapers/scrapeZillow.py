@@ -6,7 +6,7 @@ import time
 import pandas as pd
 
 # https://www.zillow.com/
-# TODO: multiple pages
+# TODO: multiple pages, us cities only 1 result
 def scrapeZillow(url_template, df):
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False, args=["--disable-blink-features-AutomationControlled"])
@@ -23,10 +23,10 @@ def scrapeZillow(url_template, df):
 
         page.goto(url_template)
         #page.wait_for_load_state('networkidle')
-        time.sleep(random.uniform(2, 6))
+        #time.sleep(random.uniform(2, 6))
         print(f"Page loaded: {url_template}")
         content = page.content()
-        print(content)
+        #print(content)
 
         #will occur if many requests
         if "px-captcha-container" in content:

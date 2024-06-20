@@ -1,4 +1,5 @@
 from playwright.sync_api import sync_playwright
+import time
 import random
 import pandas as pd
 
@@ -17,26 +18,40 @@ def scrapeApartments(url_template, df):
 
         # Navigate to the target URL
         page.goto(url_template)
+        time.sleep(random.uniform(2, 6))
         print(f"Page loaded: {url_template}")
-        #content = page.content()
+        content = page.content()
         #print(content)
         #with open('rentals_content1.txt', 'a', encoding='utf-8') as file:
         #    file.write(content)
 
         # Extract rental data from both rental_elementsA and rental_elementsB
-        rental_elementsA = page.query_selector_all('.bed-price-range')
-        rental_elementsB = page.query_selector_all('.property-title-wrapper')
+        # alternate rental_elementsA: .bed-price-range
+        rental_elementsA = page.query_selector_all('.property-link')
+        if not rental_elementsA:
+            rental_elementsA = page.query_selector_all('.bed-price-range')
+        rental_elementsB = page.query_selector_all('.property-title-wrapper') #other cities
+        if not rental_elementsB:
+            rental_elementsB = page.query_selector_all('.property-information') #toronto, miami, etc.
 
         rental_data = []
         for i, elementA in enumerate(rental_elementsA):
             # Try to extract rent and bed information from rental_elementsA
-            rent_elementA = elementA.query_selector('.property-rents')
+            rent_elementA = elementA.query_selector('.property-rents') #other cities
+            if rent_elementA is None:
+                rent_elementA = elementA.query_selector('.property-pricing') #toronto, miami, etc.
             bed_elementA = elementA.query_selector('.property-beds')
 
             if rent_elementA and bed_elementA:
                 rent_text = rent_elementA.inner_text().strip()
-                rent_text= int(rent_text.replace('$', '').replace('C', '').replace(',', '').split('-')[0].strip())
+                try:
+                    rent_text = int(rent_text.replace('$', '').replace('C', '').replace(',', '').split('-')[0].strip())
+                except ValueError:
+                    print(f"Skipping element {i}: Rent information cannot be converted to integer.")
+                    continue
+                #print(rent_text)
                 bed_text = bed_elementA.inner_text().strip()
+                #print(bed_text)
 
                 # Check if there is a corresponding element in rental_elementsB
                 if i < len(rental_elementsB):
@@ -47,9 +62,11 @@ def scrapeApartments(url_template, df):
 
                     if title_element and address_element and url_element:
                         title_text = title_element.inner_text().strip()
+                        #print(title_text)
                         address_text = address_element.inner_text().strip()
+                        #print(address_text)
                         url_text = url_element.get_attribute('href') 
-                        # Concatenate title_text and address_text for address1
+                        #print(url_element)
                         address1_text = f"{title_text}, {address_text}"
 
                         # apartment.com data is obtained from the inner_text of html tags

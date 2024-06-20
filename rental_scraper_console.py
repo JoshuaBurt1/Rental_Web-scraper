@@ -9,13 +9,15 @@ from scrapers.scrapeApartments import scrapeApartments
 # TODO:
 # A. add other rental websites: facebook marketplace, https://www.viewit.ca/rentals/scarborough?cid=364, https://trreb.ca/
 # B. Find multi-site duplicates and delete
+# C. multiple pages for: apartments.com, realtor.ca, zillow.com & let user limit number of returned values & only add rent values under < specified amount
+# D. analytics.py: compare multiple city search instances: .csv files (mean price, lower quartile price, upper quartile price) to user values (work location = milage)
 # Eventually: some kind of machine learning to look at any content = page.content() and organize it into a pandas dataframe
 # - If developer changes site, automated code fixer (opens vs code, iterative process with gpt, edits until previous functionality resumes)
 
 if __name__ == "__main__":
     # Change rental search location here:
-    searchProvState = "on"
-    searchLocation = "sarnia"
+    searchProvState = "mi"
+    searchLocation = "detroit"
     searchLocation = searchLocation.replace(' ', '-').replace('_', '-') 
     canada_provinces_abbr = ["ab", "bc", "mb", "nb", "nl","nt", "ns", "nu", "on", "pe","qc", "sk", "yt"]
 
@@ -73,6 +75,6 @@ if __name__ == "__main__":
     df_combined = df_combined[df_combined['rent'].notnull()]
     df_combined_sorted = df_combined.sort_values(by='rent')
     # Save to CSV
-    df_combined_sorted.to_csv('combined_rental_data.csv', index=False)
+    df_combined_sorted.to_csv(f'{searchLocation}_combined_rental_data.csv', index=False)
     print("Combined rental data saved to combined_rental_data.csv")
     #print(df_combined_sorted)

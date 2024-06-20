@@ -3,7 +3,6 @@ import time
 import random
 import pandas as pd
 
-# TODO: multiple pages
 # alert: different html/json depending on search location
 def scrapeApartments(url_template, df):
     with sync_playwright() as p:

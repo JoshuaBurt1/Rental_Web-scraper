@@ -45,6 +45,8 @@ def scrapeRealtor(url_template,df):
         # Get the modified HTML content after script removal
         content = page.content()
         #print(content)
+        #with open('rentals_content_realtorCA.txt', 'a', encoding='utf-8') as file:
+        #    file.write(content)
 
         # Check if the content indicates an Incapsula challenge
         if "Incapsula" in content:

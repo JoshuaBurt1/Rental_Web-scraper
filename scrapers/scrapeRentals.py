@@ -23,10 +23,9 @@ def scrapeRentals(url_template, df):
 
         page.goto(url_template)
         content = page.content()
-        #with open('rentals_content1.txt', 'a', encoding='utf-8') as file:
+        #with open('rentals_content_rentalsCA.txt', 'a', encoding='utf-8') as file:
         #    file.write(content)
-        
-        total_units_match = re.search(r'"total_units":(\d+)', content)
+        total_units_match = re.search(r'"total_units":(\d+)', content)  #same method as scrapeZillow.py
         if total_units_match:
             total_units = int(total_units_match.group(1))
             print("Total Units Match:", total_units)
@@ -57,8 +56,7 @@ def scrapeRentals(url_template, df):
 
             # Initialize DataFrame
             initial_length = len(df)
-            #same method as scrapeZillow.py
-            pattern = r'({"id".+?})'
+            pattern = r'({"id".+?})'   #same method as scrapeZillow.py
             matches = re.findall(pattern, content)
             print(matches)
             if not matches:
@@ -102,6 +100,5 @@ def scrapeRentals(url_template, df):
         df_sorted = df.sort_values(by="rent")
         print(df_sorted)
         #df.to_csv('rentals.csv', index=False)
-
         browser.close()
     return df_sorted

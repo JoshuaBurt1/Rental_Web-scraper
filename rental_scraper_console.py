@@ -7,17 +7,17 @@ from scrapers.scrapeZillow import scrapeZillow
 from scrapers.scrapeApartments import scrapeApartments
 
 # TODO:
-# A. add other rental websites: facebook marketplace, https://www.viewit.ca/rentals/scarborough?cid=364, https://trreb.ca/
+# A. add other rental websites: facebook marketplace, https://www.viewit.ca/rentals/, https://trreb.ca/
 # B. Find multi-site duplicates and delete
-# C. multiple pages for: apartments.com, realtor.ca, zillow.com & let user limit number of returned values & only add rent values under < specified amount
+# C. multiple pages for: realtor.ca: standardize code format for all pages; ensure no missing entries; enhance detect bot evasion
+# let user limit number of returned values & only add rent values under < specified amount in console
 # D. analytics.py: compare multiple city search instances: .csv files (mean price, lower quartile price, upper quartile price) to user values (work location = milage)
 # Eventually: some kind of machine learning to look at any content = page.content() and organize it into a pandas dataframe
-# - If developer changes site, automated code fixer (opens vs code, iterative process with gpt, edits until previous functionality resumes)
 
 if __name__ == "__main__":
     # Change rental search location here:
-    searchProvState = "mi"
-    searchLocation = "detroit"
+    searchProvState = "on"
+    searchLocation = "barrie"
     searchLocation = searchLocation.replace(' ', '-').replace('_', '-') 
     canada_provinces_abbr = ["ab", "bc", "mb", "nb", "nl","nt", "ns", "nu", "on", "pe","qc", "sk", "yt"]
 
@@ -66,7 +66,7 @@ if __name__ == "__main__":
         df_realtor = None
      
     # Merge DataFrames and handle duplicates
-    dfs = [df_rentals, df_apartments, df_zillow, df_realtor]
+    dfs = [df_rentals, df_apartments,df_zillow, df_realtor]
     df_combined = pd.concat([d for d in dfs if d is not None], ignore_index=True)
    # Convert 'location' column to string
     if 'location' in df_combined.columns:
